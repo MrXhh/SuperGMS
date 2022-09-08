@@ -40,7 +40,7 @@ namespace SuperGMS.Config
         /// </summary>
         public const string CONSTKEYVALUE = "ConstKeyValue";
 
-        public static Dictionary<string, ConstItem> constDic = new Dictionary<string, ConstItem>();
+        public static Dictionary<string, ConstItem> constDic = new Dictionary<string, ConstItem>(StringComparer.OrdinalIgnoreCase);
 
         private static ReaderWriterLock readerWriterLock = new ReaderWriterLock();
         private readonly static ILogger logger = LogFactory.CreateLogger<ConfigManager>();
@@ -67,9 +67,9 @@ namespace SuperGMS.Config
             try
             {
                 readerWriterLock.AcquireReaderLock(100);
-                if (constDic.ContainsKey(key.ToLower()))
+                if (constDic.ContainsKey(key))
                 {
-                    return constDic[key.ToLower()];
+                    return constDic[key];
                 }
             }
             catch (Exception ex)
@@ -96,7 +96,7 @@ namespace SuperGMS.Config
                 {
                     if (!string.IsNullOrEmpty(constKeyValue.Items[i].Key))
                     {
-                        ConstItem kv = new ConstItem() { Key = constKeyValue.Items[i].Key.ToLower(), Value = constKeyValue.Items[i].Value };
+                        ConstItem kv = new ConstItem() { Key = constKeyValue.Items[i].Key, Value = constKeyValue.Items[i].Value };
                         if (!constDic.ContainsKey(kv.Key))
                         {
                             constDic.Add(kv.Key, kv);

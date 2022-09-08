@@ -100,7 +100,7 @@ namespace SuperGMS.Rpc.Server
             }
             else
             {
-                if (!servers.TryGetValue(a.m.ToLower(), out tInfo))
+                if (!servers.TryGetValue(a.m, out tInfo))
                 {
                     code = StatusCode.MethodNotExist;
                 }
@@ -157,7 +157,7 @@ namespace SuperGMS.Rpc.Server
                     {
                         if (servers == null)
                         {
-                            servers = new Dictionary<string, ComboxClass<Type, MethodInfo>>();
+                            servers = new Dictionary<string, ComboxClass<Type, MethodInfo>>(StringComparer.OrdinalIgnoreCase);
                             string longName = config.AssemblyPath;
                             if (string.IsNullOrEmpty(longName))
                             {
@@ -297,9 +297,9 @@ namespace SuperGMS.Rpc.Server
 
                                     if (isChildAppBase(t) && !t.IsAbstract)
                                     {
-                                        if (!servers.ContainsKey(t.Name.ToLower()))
+                                        if (!servers.ContainsKey(t.Name))
                                         {
-                                            servers.Add(t.Name.ToString().ToLower(),
+                                            servers.Add(t.Name.ToString(),
                                                 new ComboxClass<Type, MethodInfo>() {V1 = t, V2 = t.GetMethod("Run")});
                                             logger.LogDebug(string.Format("初始化了appPath={0},appName={1}", path, t.Name));
                                         }

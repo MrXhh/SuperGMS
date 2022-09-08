@@ -28,7 +28,7 @@ namespace SuperGMS.Config
     /// </summary>
     internal class SqlMapManager
     {
-        private static Dictionary<string, string> sqlMapDictionary = new Dictionary<string, string>();
+        private static Dictionary<string, string> sqlMapDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private static ReaderWriterLock readerWriterLock = new ReaderWriterLock();
         private readonly static ILogger logger = LogFactory.CreateLogger<SqlMapManager>();
         /// <summary>
@@ -140,7 +140,7 @@ namespace SuperGMS.Config
         /// <returns>key</returns>
         private static string GetSqlKey(string dbModelContextName, string sqlMapKey)
         {
-            return $"{dbModelContextName.ToLower().Trim()}_{sqlMapKey.ToLower().Trim()}";
+            return $"{dbModelContextName.Trim()}_{sqlMapKey.Trim()}";
         }
 
         private static void AddSqlMap(string dbModelCtxName, string sqlMapkey, string sql)

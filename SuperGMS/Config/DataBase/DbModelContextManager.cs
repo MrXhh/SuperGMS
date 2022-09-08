@@ -52,7 +52,7 @@ namespace SuperGMS.Config
 
         private static ReaderWriterLock readerWriterLock = new ReaderWriterLock();
 
-        private static Dictionary<string, DbModelContext> dbModelContexts = new Dictionary<string, DbModelContext>();
+        private static Dictionary<string, DbModelContext> dbModelContexts = new Dictionary<string, DbModelContext>(StringComparer.OrdinalIgnoreCase);
 
         private readonly static ILogger logger = LogFactory.CreateLogger<DbModelContextManager>();
         /// <summary>
@@ -111,7 +111,7 @@ namespace SuperGMS.Config
                     }
                     dbFile = dbPath;
                 }
-                dataBaseInfo = GetDataBase(dbFile);                
+                dataBaseInfo = GetDataBase(dbFile);
             }
             BulidDataBaseInfo(dataBaseInfo);
             SqlMapManager.Initlize(GetSqlMap());
@@ -184,9 +184,9 @@ namespace SuperGMS.Config
             readerWriterLock.AcquireReaderLock(100);
             try
             {
-                if (dbModelContexts.ContainsKey(dbContextName.ToLower()))
+                if (dbModelContexts.ContainsKey(dbContextName))
                 {
-                    return dbModelContexts[dbContextName.ToLower()];
+                    return dbModelContexts[dbContextName];
                 }
             }
             catch (Exception e)
@@ -259,13 +259,13 @@ namespace SuperGMS.Config
             readerWriterLock.AcquireWriterLock(100);
             try
             {
-                if (dbModelContexts.ContainsKey(ctx.DbContextName.ToLower()))
+                if (dbModelContexts.ContainsKey(ctx.DbContextName))
                 {
-                    dbModelContexts[ctx.DbContextName.ToLower()] = ctx;
+                    dbModelContexts[ctx.DbContextName] = ctx;
                 }
                 else
                 {
-                    dbModelContexts.Add(ctx.DbContextName.ToLower(), ctx);
+                    dbModelContexts.Add(ctx.DbContextName, ctx);
                 }
             }
             catch (Exception e)

@@ -46,7 +46,7 @@ namespace SuperGMS.DB.EFEx
         public DbInfo DbInfo { get { return _dbInfo; } }
 
         private readonly object _rootObj = new object();
-        private Dictionary<string, object> _repositories = new Dictionary<string, object>();
+        private Dictionary<string, object> _repositories = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
         public EFDbContext(DbContext context, DbInfo dbInfo)
         {
@@ -67,7 +67,7 @@ namespace SuperGMS.DB.EFEx
         public ICrudRepository<TEntity> GetRepository<TEntity>() where TEntity : class
         {
             // 先检查，检查没有，锁住再检查，保证原子性，又保证性能
-            var type = typeof(TEntity).FullName.ToLower();
+            var type = typeof(TEntity).FullName;
             if (_repositories.ContainsKey(type))
             {
                 return (ICrudRepository<TEntity>)_repositories[type];

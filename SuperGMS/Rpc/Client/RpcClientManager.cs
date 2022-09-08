@@ -33,7 +33,7 @@ namespace SuperGMS.Rpc.Client
     /// </summary>
     public class RpcClientManager
     {
-        private static Dictionary<string, ClientServer> cls = new Dictionary<string, ClientServer>();
+        private static Dictionary<string, ClientServer> clientServerCache = new Dictionary<string, ClientServer>(StringComparer.OrdinalIgnoreCase);
         private static ReaderWriterLock readerWriterLock = new ReaderWriterLock();
         private readonly static ILogger logger = LogFactory.CreateLogger<RpcClientManager>();
 
@@ -66,15 +66,13 @@ namespace SuperGMS.Rpc.Client
             try
             {
                 readerWriterLock.AcquireWriterLock(100);
-                var ss = server;
-                string key = server.ServerName.ToLower();
-                if (!cls.ContainsKey(key))
+                if (!clientServerCache.ContainsKey(server.ServerName))
                 {
-                    var clientServer = new ClientServer() { RouterType = ss.RouterType, ServerName = ss.ServerName };
-                    cls.Add(key, clientServer);
+                    var clientServer = new ClientServer() { RouterType = server.RouterType, ServerName = server.ServerName };
+                    clientServerCache.Add(server.ServerName, clientServer);
                 }
 
-                cls[key].UpdateClient(ss.Client, true);
+                clientServerCache[server.ServerName].UpdateClient(server.Client, true);
             }
             catch (Exception ex)
             {
@@ -132,12 +130,12 @@ namespace SuperGMS.Rpc.Client
         /// </summary>
         /// <typeparam name="R">R</typeparam>
         /// <typeparam name="A">A</typeparam>
-        /// <param name="server">server</param>
+        /// <param name="serviceName">server</param>
         /// <param name="m">m</param>
         /// <param name="args">args</param>
         /// <param name="code">code</param>
         /// <returns>RR</returns>
-        public static R Send<A, R>(string server, string m, A args, RpcContext context, out StatusCode code)
+        public static R Send<A, R>(string serviceName, string m, A args, RpcContext context, out StatusCode code)
         {
             Args<A> a = new Args<A>()
             {
@@ -184,10 +182,9 @@ namespace SuperGMS.Rpc.Client
                 try
                 {
                     readerWriterLock.AcquireReaderLock(80);
-                    string s = server.ToLower();
-                    if (cls.ContainsKey(s))
+                    if (clientServerCache.ContainsKey(serviceName))
                     {
-                        cServer = cls[s];
+                        cServer = clientServerCache[serviceName];
                         var clients = cServer.Client;
                         int idx = 0;
                         switch (cServer.RouterType)
@@ -208,40 +205,40 @@ namespace SuperGMS.Rpc.Client
                     }
                     else
                     {
-                        StatusCode cc = new StatusCode(402, $"server ：{server} not found rid = {a.rid}");
+                        StatusCode cc = new StatusCode(402, $"server ：{serviceName} not found rid = {a.rid}");
                         rr.c = cc.code;
                         rr.msg = cc.msg;
                         rr.v = default(R);
                         logger.LogError(eventId, new LogInfo()
                         {
-                            ServiceName = server,
+                            ServiceName = serviceName,
                             ApiName = a.m,
                             CreatedBy = "FrameWork",
                             TransactionId = a.rid,
                             UseChain = JsonConvert.SerializeObject(a.Headers),
                             CodeMsg = rr.msg,
                             Code = rr.c,
-                            Desc = $"server ：{server} not found rid = {a.rid}",
+                            Desc = $"server ：{serviceName} not found rid = {a.rid}",
                         }.ToString());
                     }
                 }
                 catch (Exception e)
                 {
-                    string msg = $"获取路由信息异常{server}{e.Message} rid={a.rid}";
+                    string msg = $"获取路由信息异常{serviceName}{e.Message} rid={a.rid}";
                     StatusCode cc = new StatusCode(502, msg);
                     rr.c = cc.code;
                     rr.msg = cc.msg;
                     rr.v = default(R);
                     logger.LogError(eventId, new LogInfo()
                     {
-                        ServiceName = server,
+                        ServiceName = serviceName,
                         ApiName = a.m,
                         CreatedBy = "FrameWork",
                         TransactionId = a.rid,
                         UseChain = JsonConvert.SerializeObject(a.Headers),
                         CodeMsg = rr.msg,
                         Code = rr.c,
-                        Desc = $"获取路由信息异常{server}{e.Message} rid={a.rid}",
+                        Desc = $"获取路由信息异常{serviceName}{e.Message} rid={a.rid}",
                     }.ToString());
 
                     // GrantLogTextWriter.Write(new Exception(msg, e));
@@ -263,7 +260,7 @@ namespace SuperGMS.Rpc.Client
                 var sendValue = JsonConvert.SerializeObject(a,jSetting);
                 if (cItem == null)
                 {
-                    code = new StatusCode(403, $"{server}的路由信息无法找到 rid={a.rid}");
+                    code = new StatusCode(403, $"{serviceName}的路由信息无法找到 rid={a.rid}");
                     rr.v = default(R);
                 }
                 else
@@ -299,7 +296,7 @@ namespace SuperGMS.Rpc.Client
                         code = new StatusCode(rr.c, rr.msg);
                     }
                 }
-                logger.LogInformation(eventId, $"Client返回结果\r\n\tServiceName:{server},ApiName:{a.m},Code:{code.code},CodeMsg:{code.msg},\r\n\tUseChain{JsonConvert.SerializeObject(a.Headers)}\r\n\tResult:{JsonConvert.SerializeObject(rr)}");
+                logger.LogInformation(eventId, $"Client返回结果\r\n\tServiceName:{serviceName},ApiName:{a.m},Code:{code.code},CodeMsg:{code.msg},\r\n\tUseChain{JsonConvert.SerializeObject(a.Headers)}\r\n\tResult:{JsonConvert.SerializeObject(rr)}");
                 return rr.v;
 
                 #endregion 发送请求
@@ -320,7 +317,7 @@ namespace SuperGMS.Rpc.Client
         /// <returns>string,参数</returns>
         internal static (string c, Result<object> r) Send(Args<object> args, string url)
         {
-            var serverName = "";
+            var serviceName = "";
             ClientServer cServer = null;
             Result<object> rr = new Result<object>();
             EventId eventId = new EventId(0, args.rid);
@@ -350,8 +347,7 @@ namespace SuperGMS.Rpc.Client
                 {
                     #region 重构，获取路由配置
 
-                    string server = motheds[motheds.Length - 2];
-                    serverName = server;
+                    serviceName = motheds[motheds.Length - 2];
                     args.m = motheds[motheds.Length - 1];
                     int error = 0;
                     gotoHere:
@@ -359,10 +355,9 @@ namespace SuperGMS.Rpc.Client
                     ClientItem cItem = null;
                     try
                     {
-                        string s = server.ToLower();
-                        if (cls.ContainsKey(s))
+                        if (clientServerCache.ContainsKey(serviceName))
                         {
-                            cServer = cls[s];
+                            cServer = clientServerCache[serviceName];
                             var clients = cServer.Client;
                             int idx = 0;
                             switch (cServer.RouterType)
@@ -382,31 +377,31 @@ namespace SuperGMS.Rpc.Client
                         }
                         else
                         {
-                            StatusCode cc = new StatusCode(402, $"HttpProxy.Error:server :{server} not found rid={args.rid}");
+                            StatusCode cc = new StatusCode(402, $"HttpProxy.Error:server :{serviceName} not found rid={args.rid}");
                             rr.c = cc.code;
                             rr.msg = cc.msg;
                             rr.v = default(object);
                             logger.LogError(eventId, new LogInfo()
                             {
-                                ServiceName = serverName,
+                                ServiceName = serviceName,
                                 ApiName = args.m,
                                 CreatedBy = "httpProxy",
                                 TransactionId = args.rid,
                                 UseChain = JsonConvert.SerializeObject(args.Headers),
                                 CodeMsg = rr.msg,
                                 Code = rr.c,
-                                Desc = $"HttpProxy.Error:server :{server} not found rid={args.rid}",
+                                Desc = $"HttpProxy.Error:server :{serviceName} not found rid={args.rid}",
                             }.ToString());
                         }
                     }
                     catch (Exception e)
                     {
-                        string msg = $"获取路由信息异常{server}{e.Message} rid = {args.rid}";
+                        string msg = $"获取路由信息异常{serviceName}{e.Message} rid = {args.rid}";
                         StatusCode cc = new StatusCode(502, msg);
                         rr.c = cc.code;
                         rr.msg = cc.msg;
                         rr.v = default(object);
-                        logger.LogError(eventId, e, $"获取Server:{server}路由信息异常");
+                        logger.LogError(eventId, e, $"获取Server:{serviceName}路由信息异常");
                     }
                     finally
                     {
@@ -422,7 +417,7 @@ namespace SuperGMS.Rpc.Client
 
                     if (cItem == null)
                     {
-                        string msg = $"HttpProxy.Error:无法获取路由信息:{server} rid = {args.rid}";
+                        string msg = $"HttpProxy.Error:无法获取路由信息:{serviceName} rid = {args.rid}";
                         StatusCode cc = new StatusCode(503, msg);
                         rr.c = cc.code;
                         rr.msg = cc.msg;
@@ -430,7 +425,7 @@ namespace SuperGMS.Rpc.Client
 
                         logger.LogError(eventId, new LogInfo
                         {
-                            ServiceName = server,
+                            ServiceName = serviceName,
                             ApiName = args.m,
                             CreatedBy = "httpProxy",
                             TransactionId = args.rid,
@@ -449,7 +444,7 @@ namespace SuperGMS.Rpc.Client
                         var msg = JsonConvert.SerializeObject(args,jSetting);
                         logger.LogInformation(eventId, new LogInfo
                         {
-                            ServiceName = server,
+                            ServiceName = serviceName,
                             ApiName = args.m,
                             CreatedBy = "httpProxy",
                             TransactionId = args.rid,
@@ -467,7 +462,7 @@ namespace SuperGMS.Rpc.Client
                                 var resultObj = JsonConvert.DeserializeObject<Result<object>>(result);
                                 logger.LogInformation(eventId, new LogInfo
                                 {
-                                    ServiceName = server,
+                                    ServiceName = serviceName,
                                     ApiName = args.m,
                                     CreatedBy = "httpProxy",
                                     TransactionId = args.rid,
@@ -514,7 +509,7 @@ namespace SuperGMS.Rpc.Client
                 rr.v = default(object);
                 logger.LogError(eventId, ex, new LogInfo()
                 {
-                    ServiceName = serverName,
+                    ServiceName = serviceName,
                     ApiName = args.m,
                     CreatedBy = "httpProxy",
                     TransactionId = args.rid,
@@ -530,7 +525,7 @@ namespace SuperGMS.Rpc.Client
             var rst = JsonConvert.SerializeObject(rr, js);
             logger.LogInformation(eventId, new LogInfo()
             {
-                ServiceName = serverName,
+                ServiceName = serviceName,
                 ApiName = args.m,
                 CreatedBy = "httpProxy",
                 TransactionId = args.rid,
@@ -549,7 +544,7 @@ namespace SuperGMS.Rpc.Client
         {
             try
             {
-                cls.Clear();
+                clientServerCache.Clear();
                 ClientConnectionManager.Dispose();
             }
             catch (Exception ex)

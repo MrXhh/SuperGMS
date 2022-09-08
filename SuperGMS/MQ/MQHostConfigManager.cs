@@ -22,7 +22,7 @@ namespace SuperGMS.MQ
     public class MQHostConfigManager
     {
         public const string RabbitMQ = "RabbitMQ";
-        private static Dictionary<string,VirtualHost> _host=new Dictionary<string, VirtualHost>();
+        private static Dictionary<string, VirtualHost> _host = new Dictionary<string, VirtualHost>(StringComparer.OrdinalIgnoreCase);
 
         private static ReaderWriterLock readerWriterLock = new ReaderWriterLock();
 
@@ -47,9 +47,9 @@ namespace SuperGMS.MQ
                         h.NoAckMsgCount = el.Host[i].NoAckMsgCount;
 
                         // 如果配置了同名，跳过
-                        if (!_host.ContainsKey(h.HostName.ToLower()))
+                        if (!_host.ContainsKey(h.HostName))
                         {
-                            _host.Add(h.HostName.ToLower(), h);
+                            _host.Add(h.HostName, h);
                         }
                     }
                 }
@@ -77,9 +77,9 @@ namespace SuperGMS.MQ
             try
             {
                 readerWriterLock.AcquireReaderLock(80);
-                if (_host.ContainsKey(host.ToLower()))
+                if (_host.ContainsKey(host))
                 {
-                    return _host[host.ToLower()];
+                    return _host[host];
                 }
             }
             catch (Exception ex)
