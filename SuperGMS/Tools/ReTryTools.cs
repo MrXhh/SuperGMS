@@ -46,7 +46,7 @@ namespace SuperGMS.Tools
             {
                 return fn(args1);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 num += 1;
                 if (num < tryNum)
@@ -67,7 +67,7 @@ namespace SuperGMS.Tools
             {
                 return fn(args1, args2);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 num += 1;
                 if (num < tryNum)
@@ -88,7 +88,7 @@ namespace SuperGMS.Tools
             {
                 return fn(args1, args2, args3);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 num += 1;
                 if (num < tryNum)
@@ -109,7 +109,7 @@ namespace SuperGMS.Tools
             {
                 return fn(args1, args2, args3,args4);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 num += 1;
                 if (num < tryNum)
@@ -136,7 +136,7 @@ namespace SuperGMS.Tools
             {
                 fn(args1);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 num += 1;
                 if (num < tryNum)
@@ -156,7 +156,7 @@ namespace SuperGMS.Tools
             {
                 fn(args1, args2);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 num += 1;
                 if (num < tryNum)
@@ -176,7 +176,7 @@ namespace SuperGMS.Tools
             {
                 fn(args1, args2, args3);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 num += 1;
                 if (num < tryNum)
@@ -196,7 +196,7 @@ namespace SuperGMS.Tools
             {
                 fn(args1, args2, args3, args4);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 num += 1;
                 if (num < tryNum)

@@ -384,7 +384,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                     return connection.Connection.Query<T>(pageSql, parameters, null, false, DbInfo.CommandTimeout, CommandType.Text).AsList();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -420,7 +420,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                     return connection.Connection.Query<T>(pageSql, parameters, null, false, DbInfo.CommandTimeout, CommandType.Text).AsList();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -439,7 +439,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                     return connection.Connection.Query(pageSql, parameters, null, false, DbInfo.CommandTimeout, CommandType.Text).AsList();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -469,7 +469,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                         searchParameters.PageInfo.TotalCount = connection.Connection.Query<int>(countParaSql, parameters, null, false, DbInfo.CommandTimeout, CommandType.Text)?.FirstOrDefault()??0;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw;
                 }
@@ -507,7 +507,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                         pageInfo.TotalCount = connection.Connection.Query<int>(countSql, parameters, null, false, DbInfo.CommandTimeout, CommandType.Text)?.FirstOrDefault()??0;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw;
                 }
@@ -646,7 +646,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
 
                 return ds;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -662,7 +662,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                     return connection.Connection.Query(sql, ps, null, false, DbInfo.CommandTimeout, commandType).AsList();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -684,7 +684,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                     return connection.Connection.Query<T>(sql, ps, null, false, DbInfo.CommandTimeout, commandType).AsList();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -752,7 +752,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                             tran.Commit();
                             return v;
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             tran.Rollback();
                             throw;
@@ -760,7 +760,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -788,7 +788,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                             tran.Commit();
                             return v;
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             tran.Rollback();
                             throw;
@@ -796,7 +796,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -875,7 +875,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                             tran.Commit();
                             return i;
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             tran.Rollback();
                             throw;
@@ -883,7 +883,7 @@ namespace SuperGMS.DB.EFEx.GrantDbFactory
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }

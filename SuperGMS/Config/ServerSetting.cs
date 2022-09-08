@@ -681,7 +681,7 @@ namespace SuperGMS.Config
         {
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             if (string.IsNullOrEmpty(env)) // 不配置就走config.json
-                configFile = string.Format(configFile, "");
+                configFile = string.Format(configFile, string.Empty);
             else
             {
                 env = env.ToLower().Trim();
