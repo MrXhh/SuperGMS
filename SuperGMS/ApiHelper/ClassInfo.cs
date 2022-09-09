@@ -31,8 +31,8 @@ namespace SuperGMS.ApiHelper
         /// </summary>
         public static ClassInfo Nullables => new ClassInfo
         {
-            FullName = typeof(Nullables).FullName,
-            Name = typeof(Nullables).Name,
+            FullName = Rpc.Nullables.NullablesType.FullName,
+            Name = Rpc.Nullables.NullablesType.Name,
             Desc = "空参数",
             Type = "空",
         };

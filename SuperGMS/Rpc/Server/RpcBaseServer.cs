@@ -146,7 +146,7 @@ namespace SuperGMS.Rpc.Server
         {
             analyzeCode = StatusCode.OK;
             A arg = default(A);
-            if (typeof(A) == typeof(Nullables))
+            if (typeof(A) == Nullables.NullablesType)
             {
                 // 允许为空，则直接返回空，不管客户端给传啥，都扔掉
                 return arg;

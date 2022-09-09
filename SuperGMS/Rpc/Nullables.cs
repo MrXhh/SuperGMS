@@ -22,6 +22,8 @@ namespace SuperGMS.Rpc
     {
         private static Nullables nullValue;
 
+        public static readonly Type NullablesType = typeof(Nullables);
+
         public static Nullables NullValue
         {
             get

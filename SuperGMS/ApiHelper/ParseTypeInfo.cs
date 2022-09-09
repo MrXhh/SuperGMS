@@ -87,7 +87,7 @@ namespace SuperGMS.ApiHelper
                 return info;
             }
 
-            if (typeof(Nullables) == type)
+            if (Nullables.NullablesType == type)
             {
                 return ClassInfo.Nullables;
             }
