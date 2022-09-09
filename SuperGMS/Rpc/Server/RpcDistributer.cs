@@ -81,60 +81,48 @@ namespace SuperGMS.Rpc.Server
                 Parameters = msg
             };
             StatusCode code = StatusCode.OK;
-            string rid = string.Empty;
-            Args<object> a = null;
-            try
-            {
-                a = JsonConvert.DeserializeObject<Args<object>>(args, requestJsonSetting);
-            }
-            catch (Exception ex)
-            {
-                code = StatusCode.ArgesError;
-                logger.LogError(ex, "反序列化参数[args]异常");
-            }
 
-            ComboxClass<Type, MethodInfo> tInfo = null;
-            if (a == null)
+            do
             {
-                code = StatusCode.ArgesError;
-            }
-            else
-            {
-                if (!servers.TryGetValue(a.m, out tInfo))
+                if (!TryDeserializeReqArgs(args, out var a))
+                {
+                    code = StatusCode.ArgesError;
+                    break;
+                }
+
+                if (!servers.TryGetValue(a.m, out var tInfo))
                 {
                     code = StatusCode.MethodNotExist;
-                }
-                else
-                {
-                    try
-                    {
-                        object obj = Activator.CreateInstance(tInfo.V1);
-                        object[] o = new object[] { a, code, context };
-                        object r = tInfo.V2.Invoke(obj, o);
-                        code = (StatusCode)o[1];
-                        if (r != null)
-                        {
-                            string rr = JsonConvert.SerializeObject(r, resultJsonSetting);
-                            requestLog.Result = rr;
-                            requestLog.SetInfo(a, new Result<object>()
-                            {
-                                c = code.code,
-                                msg = code.msg,
-                            });                          
-                            logger.LogInformation($"请求处理正常结束，返回值是：{rr}");
-                            return rr;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        code = StatusCode.ServerError;
-                        code.msg = $"{ex.Message}:{ex.StackTrace},rid={a.rid}";
-                        logger.LogError(ex, $"请求处理异常结束,{code.msg}");
-                    }
+                    break;
                 }
 
-                rid = a.rid;
-            }
+                try
+                {
+                    object obj = Activator.CreateInstance(tInfo.V1);
+                    object[] o = new object[] { a, code, context };
+                    object r = tInfo.V2.Invoke(obj, o);
+                    code = (StatusCode)o[1];
+                    if (r != null)
+                    {
+                        string rr = JsonConvert.SerializeObject(r, resultJsonSetting);
+                        requestLog.Result = rr;
+                        requestLog.SetInfo(a, new Result<object>()
+                        {
+                            c = code.code,
+                            msg = code.msg,
+                        });
+                        logger.LogInformation($"请求处理正常结束，返回值是：{rr}");
+                        return rr;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    code = StatusCode.ServerError;
+                    code.msg = $"{ex.Message}:{ex.StackTrace},rid={a.rid}";
+                    logger.LogError(ex, $"请求处理异常结束,{code.msg}");
+                }
+
+            } while (false);
 
             Result<object> rst = new Result<object>();
             rst.c = code.code;
@@ -142,6 +130,21 @@ namespace SuperGMS.Rpc.Server
             string rs = JsonConvert.SerializeObject(rst, resultJsonSetting);
             logger.LogInformation($"请求异常返回:{rs}");
             return rs;
+        }
+
+        private bool TryDeserializeReqArgs(string args, out Args<object> argsObj)
+        {
+            try
+            {
+                argsObj = JsonConvert.DeserializeObject<Args<object>>(args, requestJsonSetting);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "反序列化参数[args]异常");
+                argsObj = null;
+                return false;
+            }
         }
 
         /// <summary>

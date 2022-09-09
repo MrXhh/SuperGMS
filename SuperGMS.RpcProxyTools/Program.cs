@@ -26,56 +26,60 @@ namespace SuperGMS.RpcProxyTools
         /// </summary>
         private static void Main(string[] args)
         {
-            gotoLable:
-            try
+            do
             {
-                string serviceDllPath = string.Empty;
-                string outPutPath;
-
-                gotoLable1:
-                Console.WriteLine("请输入要生成代理类的主DLL完整路径");
-                serviceDllPath = Console.ReadLine();
-                if (string.IsNullOrEmpty(serviceDllPath))
+                try
                 {
-                    goto gotoLable1;
-                }
+                    string serviceDllPath = string.Empty;
+                    string outPutPath;
 
-                gotoLable2:
-                Console.WriteLine("请输入生成文件保存的路径，如：D:\\");
-                outPutPath = Console.ReadLine();
-                if (string.IsNullOrEmpty(outPutPath))
-                {
-                    goto gotoLable2;
-                }
+                    do
+                    {
+                        Console.WriteLine("请输入要生成代理类的主DLL完整路径");
+                        serviceDllPath = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(serviceDllPath))
+                        {
+                            break;
+                        }
+                    } while (true);
 
-                string template = getFileTxt("ClassTemplate.txt");
-                string templateBody = getFileTxt("ClassBodyTemplate.txt");
-                string interfaceBodyTemplate = getFileTxt("InterfaceBodyTemplate.txt");
-                AssemblyToolProxy proxy = new AssemblyToolProxy();
+                    do
+                    {
+                        Console.WriteLine("请输入生成文件保存的路径，如：D:\\");
+                        outPutPath = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(outPutPath))
+                        {
+                            break;
+                        }
+                    } while (true);
 
-                if (proxy.Create(serviceDllPath, outPutPath, template, templateBody, interfaceBodyTemplate))
-                {
-                    Console.WriteLine($"生成完毕,请在:{outPutPath}查看生成文件");
-                }
-                else
-                {
-                    Console.WriteLine("生成失败");
-                }
+                    string template = getFileTxt("ClassTemplate.txt");
+                    string templateBody = getFileTxt("ClassBodyTemplate.txt");
+                    string interfaceBodyTemplate = getFileTxt("InterfaceBodyTemplate.txt");
+                    AssemblyToolProxy proxy = new AssemblyToolProxy();
 
-                Thread.Sleep(int.MaxValue);
+                    if (proxy.Create(serviceDllPath, outPutPath, template, templateBody, interfaceBodyTemplate))
+                    {
+                        Console.WriteLine($"生成完毕,请在:{outPutPath}查看生成文件");
+                    }
+                    else
+                    {
+                        Console.WriteLine("生成失败");
+                    }
 
-                return;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("生成失败:" + ex.Message + "\r\n" + ex.StackTrace);
-                if (args?.Length >= 2)
-                {
+                    Thread.Sleep(int.MaxValue);
+
                     return;
                 }
-
-                goto gotoLable;
-            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("生成失败:" + ex.Message + "\r\n" + ex.StackTrace);
+                    if (args?.Length >= 2)
+                    {
+                        return;
+                    }
+                }
+            } while (true);
         }
 
         private static string getFileTxt(string filePath)

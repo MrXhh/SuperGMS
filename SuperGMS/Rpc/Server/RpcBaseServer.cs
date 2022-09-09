@@ -96,7 +96,7 @@ namespace SuperGMS.Rpc.Server
             }
 
             var userCxt = ctx.GetUserContext();
-            if (userCxt == null || userCxt.UserInfo==null||userCxt.UserInfo.UserId < 1)
+            if (userCxt == null || userCxt.UserInfo == null || userCxt.UserInfo.UserId < 1)
             {
                 loginCode = StatusCode.LoginFailed;
                 return false;
@@ -113,7 +113,7 @@ namespace SuperGMS.Rpc.Server
         /// <param name="rightCode">code</param>
         /// <returns>bool</returns>
         protected bool CheckRights(A args, out StatusCode rightCode)
-        {        
+        {
             if (ctx == null)
             {
                 rightCode = StatusCode.LoginFailed;
@@ -146,33 +146,31 @@ namespace SuperGMS.Rpc.Server
         {
             analyzeCode = StatusCode.OK;
             A arg = default(A);
-            if (typeof(A) != typeof(Nullables))
-            {
-                // 服务器要求参数不能为空，但是客户端给传了空，返回参数错误
-                if (args.v == null || args.v.ToString() == string.Empty)
-                {
-                    analyzeCode = StatusCode.ArgesError;
-                    return null;
-                }
-                if (args.v.GetType() == typeof(A))
-                {
-                    return (A)args.v; // v是A的类型，就不用转了
-                }
-                try
-                {
-                    return JsonConvert.DeserializeObject<A>(args.v.ToString(), new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.Populate });
-                }
-                catch (Exception ex)
-                {
-                    analyzeCode = StatusCode.ArgesError;
-                    logger.LogError(new EventId(0, args.rid), ex, string.Format("Args analyze error, Args={0}", args.v.ToString()));
-                    return null;
-                }
-            }
-            else
+            if (typeof(A) == typeof(Nullables))
             {
                 // 允许为空，则直接返回空，不管客户端给传啥，都扔掉
                 return arg;
+            }
+
+            // 服务器要求参数不能为空，但是客户端给传了空，返回参数错误
+            if (args.v == null || args.v.ToString() == string.Empty)
+            {
+                analyzeCode = StatusCode.ArgesError;
+                return null;
+            }
+            if (args.v.GetType() == typeof(A))
+            {
+                return (A)args.v; // v是A的类型，就不用转了
+            }
+            try
+            {
+                return JsonConvert.DeserializeObject<A>(args.v.ToString(), new JsonSerializerSettings() { DefaultValueHandling = DefaultValueHandling.Populate });
+            }
+            catch (Exception ex)
+            {
+                analyzeCode = StatusCode.ArgesError;
+                logger.LogError(new EventId(0, args.rid), ex, string.Format("Args analyze error, Args={0}", args.v.ToString()));
+                return null;
             }
         }
 
@@ -187,9 +185,9 @@ namespace SuperGMS.Rpc.Server
         /// <returns></returns>
         public R RunInner(A args, out StatusCode c, RpcContext rpcContext, object objValue = null)
         {
-           var a = rpcContext.Args.Copy();
-           a.v = args;
-           return Run(a, out c, objValue).v;
+            var a = rpcContext.Args.Copy();
+            a.v = args;
+            return Run(a, out c, objValue).v;
         }
 
         /// <summary>
@@ -264,7 +262,7 @@ namespace SuperGMS.Rpc.Server
                 rt.msg = c.msg;
                 rt.error = $"{ex.Message},{ex.StackTrace}";
                 logger.LogError(eventId, ex, "Executing GrantRpcBaseServer.Run() Error.");
-                return rt;  
+                return rt;
             }
             finally
             {
