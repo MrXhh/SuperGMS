@@ -45,7 +45,7 @@ namespace SuperGMS.Extend.EditFormFieldHelper
                 {
                     if (apiArgs == null)
                     {
-                        apiArgs = new Dictionary<string, List<EditFormApiResult>>();
+                        apiArgs = new Dictionary<string, List<EditFormApiResult>>(StringComparer.OrdinalIgnoreCase);
 
                         // var runtimeId = RuntimeEnvironment.GetRuntimeIdentifier();
                         // var assemblies = DependencyContext.Default.GetRuntimeAssemblyNames(runtimeId);
@@ -76,14 +76,13 @@ namespace SuperGMS.Extend.EditFormFieldHelper
                                 // }
                                 List<EditFormApiResult> apiList = new List<EditFormApiResult>();
                                 EditFormHelper.GetEditFormField(param.args, ref apiList);
-                                var key = t.Name.ToLower();
-                                if (apiArgs.ContainsKey(key))
+                                if (apiArgs.ContainsKey(t.Name))
                                 {
-                                    apiArgs[key] = apiList;
+                                    apiArgs[t.Name] = apiList;
                                 }
                                 else
                                 {
-                                    apiArgs.Add(key, apiList);
+                                    apiArgs.Add(t.Name, apiList);
                                 }
                             }
                         }

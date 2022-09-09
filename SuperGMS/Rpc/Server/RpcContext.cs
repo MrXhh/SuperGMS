@@ -33,8 +33,8 @@ namespace SuperGMS.Rpc.Server
         private readonly object rootLock = new object();
         private Dictionary<string, HeaderValue> headers;
         private UserContext userContext;
-        private Dictionary<string, IEFDbContext> dbContexts = new Dictionary<string, IEFDbContext>();
-        private List<DistributedLock> locks=new List<DistributedLock>();
+        private Dictionary<string, IEFDbContext> dbContexts = new Dictionary<string, IEFDbContext>(StringComparer.OrdinalIgnoreCase);
+        private List<DistributedLock> locks = new List<DistributedLock>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RpcContext"/> class.
@@ -111,7 +111,7 @@ namespace SuperGMS.Rpc.Server
                 {
                     if (userContext == null && !string.IsNullOrEmpty(this.Args.tk))
                     {
-                        userContext = UserContext.GetUserContext(this.Args.tk); 
+                        userContext = UserContext.GetUserContext(this.Args.tk);
                     }
                 }
             }
@@ -131,7 +131,7 @@ namespace SuperGMS.Rpc.Server
         public IEFDbContext GetDbContext<TContext>(bool newOne = false)
             where TContext : DbContext
         {
-            var key = typeof(TContext).FullName.ToLower();
+            var key = typeof(TContext).FullName;
             if (newOne)
             {
                 lock (rootLock)
@@ -182,7 +182,7 @@ namespace SuperGMS.Rpc.Server
         /// </summary>
         public void Dispose()
         {
-            locks.ForEach(x => { LockManager.ReleaseLock(x);});
+            locks.ForEach(x => { LockManager.ReleaseLock(x); });
             if (dbContexts != null && dbContexts.Count > 0)
             {
                 foreach (var db in dbContexts.Keys)
@@ -214,8 +214,8 @@ namespace SuperGMS.Rpc.Server
         public DistributedLock TryGetLock(string lockKey, int timeOut = 0,
             int autoReleaseTime = 60 * 1000)
         {
-            var l= LockManager.TryGetLock(lockKey, timeOut, autoReleaseTime);
-            if (l==null)
+            var l = LockManager.TryGetLock(lockKey, timeOut, autoReleaseTime);
+            if (l == null)
             {
                 return null;
             }

@@ -206,7 +206,7 @@ namespace SuperGMS.Extend.Extensions
         public static List<T> ToList<T>(this DataTable dataTable, bool needResource = false, RpcContext context = null, bool allowDuplicates=true)
             where T : new()
         {
-            var dataList = new Dictionary<string, T>();
+            var dataList = new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);
 
             const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
 
@@ -290,9 +290,9 @@ namespace SuperGMS.Extend.Extensions
                         setFieldValue(errorPropertyInfo, classObj, convertErrors, out string e);
                     }
                 }
-                if (dataList.ContainsKey(key.ToString().ToLower()))
+                if (dataList.ContainsKey(key.ToString()))
                     duplicateRowIndexs.Add(idx + 2);
-                dataList[key.ToString().ToLower()] = classObj;
+                dataList[key.ToString()] = classObj;
             }
             StringBuilder sbError = new StringBuilder();
             if (emptyRowIndex.Count > 0)
