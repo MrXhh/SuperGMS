@@ -18,7 +18,7 @@ namespace SuperGMS.HttpProxy
             // 要做weapi就需要指定服务名，因为根据服务名才能知道相关配置，这个是因为webapi在启动前首先要指定端口
             if (args != null && args.Length > 0)
             {
-                SuperGMS.HttpProxy.SuperHttpProxy.HttpProxyName = args[0];
+                //SuperGMS.HttpProxy.SuperHttpProxy.HttpProxyName = args[0];
             }
             var server = ServerSetting.GetRpcServer(SuperHttpProxy.HttpProxyName);
             var host = WebHost.CreateDefaultBuilder()
